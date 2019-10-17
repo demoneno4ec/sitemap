@@ -67,18 +67,8 @@ class Link
 
     private function filterLink(string $link): string
     {
-        $link = trim($link);
+        $link = rtrim($link);
 
-        $link = $this->removeLastSlash($link);
-
-        return $link;
-    }
-
-    private function removeLastSlash(string $link):string
-    {
-        if (!empty($link) && mb_substr($link, -1) === '/') {
-            $link = mb_substr($link, 0, -1);
-        }
         return $link;
     }
 
@@ -113,11 +103,6 @@ class Link
         return $this->rootPath;
     }
 
-    public function getAbsolutePath(): string
-    {
-        return $this->absolutePath;
-    }
-
     public function getFullPath(): string
     {
         return $this->fullPath;
@@ -137,7 +122,7 @@ class Link
 
     private function setRootPath(string $rootPath): void
     {
-        $this->removeLastSlash($rootPath);
+        $this->rtrim($rootPath);
 
         $this->rootPath = $rootPath;
     }

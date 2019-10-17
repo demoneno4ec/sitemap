@@ -38,7 +38,7 @@ class SiteMap extends File
         $this->dataAppend('</urlset>');
     }
 
-    private function getLinksPage(string $page, $rootPath, $pagePath = ''):array
+    private function getLinksPage(string $page, string $rootPath, string $pagePath = ''):array
     {
         $document = phpQuery::newDocument($page);
         $obLinks = $document->find('a');
@@ -106,9 +106,9 @@ class SiteMap extends File
         $this->links_checked[] = $pagePath;
     }
 
-    private function addAddedUrl(string $fullPath): void
+    private function addAddedUrl(string $pagePath): void
     {
-        $this->links_added[] = $fullPath;
+        $this->links_added[] = $pagePath;
     }
 
     private function addLink($link):void
