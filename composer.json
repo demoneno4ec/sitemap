@@ -1,5 +1,6 @@
 {
     "require": {
-        "guzzlehttp/guzzle": "^6.3"
+        "guzzlehttp/guzzle": "^6.3",
+        "rct567/dom-query": "^0.8.0"
     }
 }

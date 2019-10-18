@@ -4,7 +4,6 @@ use SiteMap\SiteMap\SiteMap;
 
 require_once 'functions.php';
 require 'vendor/autoload.php';
-require_once 'classes/PhpQuery.php';
 require_once 'interfaces/FileInterface.php';
 require_once 'classes/File.php';
 require_once 'classes/Link.php';

@@ -67,9 +67,7 @@ class Link
 
     private function filterLink(string $link): string
     {
-        $link = rtrim($link);
-
-        return $link;
+        return rtrim(ltrim($link),  " \/\t\n\r\0\x0B");
     }
 
     /**
@@ -122,9 +120,7 @@ class Link
 
     private function setRootPath(string $rootPath): void
     {
-        $this->rtrim($rootPath);
-
-        $this->rootPath = $rootPath;
+        $this->rootPath = $this->filterLink($rootPath);
     }
 
     private function setFullPath($pagePath): void

@@ -6,7 +6,7 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
-use phpQuery;
+use Rct567\DomQuery\DomQuery;
 use SiteMap\File\File;
 use SiteMap\Link\Link;
 
@@ -40,20 +40,22 @@ class SiteMap extends File
 
     private function getLinksPage(string $page, string $rootPath, string $pagePath = ''):array
     {
-        $document = phpQuery::newDocument($page);
+        $document = new DomQuery($page);
         $obLinks = $document->find('a');
         $links = [];
 
-        foreach ($obLinks as $key => $domLink) {
+        foreach ($obLinks as $key => $obLink) {
+            $strLink = $obLink->attr('href');
 
-            $strLink = pq($domLink)->attr('href');
             try {
                 $link = new Link($strLink, $rootPath, $pagePath);
             }catch(Exception $e){
                 info($strLink .' '. $e->getMessage());
                 continue;
             }
+
             $fullPath = $link->getFullPath();
+
             if (in_array($fullPath, $this->links_checked, true)){
                 continue;
             }
@@ -64,6 +66,7 @@ class SiteMap extends File
             $this->addAddedUrl($fullPath);
             $links[] = $link->getFullPath();
         }
+
         return $links;
     }
 
