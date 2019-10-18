@@ -16,9 +16,13 @@ abstract class File implements FileInterface
         return file_get_contents($this->getPath());
     }
 
-    public function write(string $data): bool
+    public function write(string $data, array $options = []): bool
     {
-        file_put_contents($this->getPath(), $data);
+        if (!empty($options['append']) && $options['append'] === true) {
+            file_put_contents($this->getPath(), $data, FILE_APPEND);
+        } else {
+            file_put_contents($this->getPath(), $data);
+        }
         return true;
     }
 

@@ -1,6 +1,7 @@
 <?php
 
-use SiteMap\SiteMap\SiteMap;
+
+use SiteMap\SiteMap;
 
 require_once 'functions.php';
 require 'vendor/autoload.php';
@@ -23,7 +24,6 @@ $url = $argv[1];
 
 
 $siteMap = new SiteMap($url);
-$siteMap->requestLinks();
-$data = $siteMap->getData();
-$siteMap->write($data);
+
+$siteMap->generate();
 echo 'we are';

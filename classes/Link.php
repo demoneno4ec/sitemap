@@ -10,7 +10,7 @@ class Link
     private $rootPath = '';
     private $fullPath = '';
 
-    public function __construct(string $strLink, $rootPath, $pagePath = '')
+    public function __construct(string $strLink, $rootPath, $url)
     {
         $this->setRootPath($rootPath);
         $this->setValue($strLink);
@@ -19,9 +19,13 @@ class Link
             throw new RuntimeException('Ссылка пуста');
         }
 
-        $this->setFullPath($pagePath);
+        $this->setFullPath($url);
     }
 
+    public function __toString(): string
+    {
+        return $this->fullPath;
+    }
 
     private function validLink(string $link): bool
     {
@@ -67,7 +71,7 @@ class Link
 
     private function filterLink(string $link): string
     {
-        return rtrim(ltrim($link),  " \/\t\n\r\0\x0B");
+        return rtrim(ltrim($link), " \/\t\n\r\0\x0B");
     }
 
     /**
