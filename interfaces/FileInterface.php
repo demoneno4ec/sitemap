@@ -9,7 +9,7 @@ interface FileInterface
     public function create():bool;
     public function delete():bool;
 
-    public function setPath(string $filePath):void;
+    public function setFullName(string $name, string $extension):void;
 
     public function getPath():string;
 }

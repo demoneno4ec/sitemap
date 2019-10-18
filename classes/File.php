@@ -4,11 +4,15 @@ namespace SiteMap\File;
 
 abstract class File implements FileInterface
 {
-    private $filePath = '';
+    private $name = '';
+    private $extension = '';
+    private $fullName = '';
 
-    public function __construct($filePath)
+    public function __construct($name, $extension)
     {
-        $this->setPath($filePath);
+        $this->name= $name;
+        $this->extension = $extension;
+        $this->setFullName($name, $extension);
     }
 
     public function read(): string
@@ -36,11 +40,11 @@ abstract class File implements FileInterface
         return unlink($this->getPath());
     }
 
-    public function setPath(string $filePath): void
+    public function setFullName(string $name, string $extension): void
     {
-        $this->filePath = $filePath;
+        $this->fullName = $name . $extension;
 
-        if (!file_exists($filePath) && !$this->create()) {
+        if (!file_exists($this->getPath()) && !$this->create()) {
             die('i am die');
         }
 
@@ -48,6 +52,6 @@ abstract class File implements FileInterface
 
     public function getPath(): string
     {
-        return $this->filePath;
+        return $this->fullName;
     }
 }

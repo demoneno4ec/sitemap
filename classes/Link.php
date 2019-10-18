@@ -29,6 +29,8 @@ class Link
 
     private function validLink(string $link): bool
     {
+        $clearLink = $this->clearGetParams($link);
+
         if (empty($link)) {
             return false;
         }
@@ -38,18 +40,36 @@ class Link
             '#',
         ];
 
+        $invalidStartLinks = [
+            'tel:',
+            '//',
+        ];
+
+        $invalidExtensions = [
+            '.pdf'
+        ];
         if (in_array($link, $invalidLinks, true)) {
             return false;
         }
+
 
         if ($this->checkFullPathLink($link)) {
             return true;
         }
 
-        if (
-            $this->checkAbsolutePathLink($link)
-            && isset($link[1])
-            && $link[1] === '/') {
+        foreach ($invalidStartLinks as $invalidStartLink) {
+            if (mb_strpos($link, $invalidStartLink) === 0) {
+                return false;
+            }
+        }
+
+        $extension = substr($clearLink, strrpos($clearLink, '.'));
+
+        if (in_array($extension, $invalidExtensions, 1)) {
+            return false;
+        }
+
+        if ($this->checkOtherResource($link)) {
             return false;
         }
 
@@ -112,8 +132,9 @@ class Link
 
     /**
      * Setters
+     * @param  string  $link
      */
-    private function setValue($link): void
+    private function setValue(string $link): void
     {
         $link = $this->filterLink($link);
 
@@ -131,5 +152,15 @@ class Link
     {
         $value = $this->getValue();
         $this->fullPath = $this->formatLink($pagePath, $value);
+    }
+
+    private function clearGetParams($url):string
+    {
+        return preg_replace('/^([^?]+)(\?.*?)?(#.*)?$/', '$1$3', $url);
+    }
+
+    private function checkOtherResource(string $link): bool
+    {
+        return (mb_strpos($link, 'http://') === 0) || (mb_strpos($link, 'https://') === 0);
     }
 }

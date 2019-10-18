@@ -13,34 +13,47 @@ class SiteMap extends File
 {
     private $url = '';
 
-    private const siteMapFile = 'sitemap.xml';
+    private $fileName = 'sitemap';
+    private const fileExtension = '.xml';
+    private $fullName = 'sitemap.xml';
 
     private $links_added = [];
 
+    private $fileIndex = 0;
+    private $maxSize = 50 * 1024 * 1024;
+
+
     public function __construct($url)
     {
-        parent::__construct(self::siteMapFile);
+        parent::__construct($this->fileName, self::fileExtension);
         $this->setUrl($url);
-        $this->writeBefore();
     }
 
 
-    public function generate()
+    public function generate(): void
     {
-        $url = $this->url;
+        $url = $this->getUrl();
+        $this->writeBefore();
         $this->writeLink($url);
         $this->writeLinksOnPage($url);
         success('sitemap generated');
-        $this->writeAfter();
+        if ($this->fileIndex > 0) {
+            $this->generateMultiSitemap();
+        }else{
+            $this->writeAfter();
+        }
     }
 
-    private function writeLinksOnPage(string $url)
+    private function writeLinksOnPage(string $url): bool
     {
         // Получить html по url
         $htmlPage = $this->getHtmlByUrl($url);
 
+        if (empty($htmlPage)) {
+            return false;
+        }
         //Получить все ссылки на странице
-        $links = $this->getLinks($htmlPage, $this->url, $url);
+        $links = $this->getLinks($htmlPage, $this->getUrl(), $url);
 
         //Записать полученные ссылки
         $this->writeLinks($links);
@@ -60,8 +73,8 @@ class SiteMap extends File
         try {
             $response = $client->request('GET', $url);
         } catch (GuzzleException $e) {
-            error(print_r($e->getMessage()));
-            return false;
+            error(print_r($e->getMessage(), 1));
+            return '';
         }
 
         return $response->getBody();
@@ -106,16 +119,16 @@ class SiteMap extends File
     /**
      * @param  Link[]  $links
      */
-    private function writeLinks(array $links)
+    private function writeLinks(array $links): void
     {
         foreach ($links as $link) {
             $fullPath = $link->getFullPath();
+            success($fullPath);
             $this->writeLink($fullPath);
-            $this->setFilePath();
         }
     }
 
-    private function writeLink(string $link):void
+    private function writeLink(string $link): void
     {
         $options = [
             'append' => true
@@ -128,6 +141,7 @@ class SiteMap extends File
 //            '    <changefreq>'.$freq.'</changefreq>'. PHP_EOL .
 //            '    <priority>'.$priority.'</priority>'. PHP_EOL .
             '  </url>'.PHP_EOL;
+        $this->checkMaxParams();
         $this->write($string, $options);
     }
 
@@ -181,13 +195,62 @@ class SiteMap extends File
         return $this->url;
     }
 
-    private function setFilePath()
+    private function checkMaxParams(): void
     {
-//        $countLinkAdded = count($this->links_added);
-//        $indexFile = count($this->links_added) % 50;
-//        $index = count($this->links_added) / 50;
-//        var_dump($countLinkAdded);
-//        var_dump($indexFile);
-//        var_dump((int) $index);
+        $countLinkAdded = count($this->links_added);
+
+        $index = (int) ($countLinkAdded / 50000);
+
+        if ($index !== $this->fileIndex || filesize($this->fullName) > $this->maxSize) {
+            $this->fileIndex++;
+            $newFileName = $this->fileName.'_'.$this->fileIndex.self::fileExtension;
+            copy($this->fullName, $newFileName);
+            file_put_contents($newFileName, '</urlset>', FILE_APPEND);
+            $this->writeBefore();
+        }
+    }
+
+    private function generateMultiSitemap()
+    {
+        $this->fileIndex++;
+        $newFileName = $this->fileName.'_'.$this->fileIndex.self::fileExtension;
+        copy($this->fullName, $newFileName);
+        file_put_contents($newFileName, '</urlset>', FILE_APPEND);
+
+        $this->writeMultiBefore();
+        for ($index = $this->fileIndex; $index > 0;  $index--) {
+            $sitemapName = $this->fileName.'_'.$index.self::fileExtension;
+            $this->writeSitemapLink($this->getUrl() . '/' . $sitemapName);
+        }
+        $this->writeMultiAfter();
+    }
+
+    private function writeMultiBefore()
+    {
+        $before =
+            '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
+            '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'.PHP_EOL;
+
+        $this->write($before);
+    }
+    private function writeMultiAfter(): void
+    {
+        $options = [
+            'append' => true
+        ];
+        $this->write('</sitemapindex>', $options);
+    }
+
+    private function writeSitemapLink(string $link): void
+    {
+        $options = [
+            'append' => true
+        ];
+
+        $string = '  <sitemap>'.PHP_EOL.
+            '    <loc>'.htmlentities($link).'</loc>'.PHP_EOL.
+            '  </sitemap>'.PHP_EOL;
+
+        $this->write($string, $options);
     }
 }
